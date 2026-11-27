@@ -1,0 +1,779 @@
+{
+  "__inputs": [],
+  "__elements": {},
+  "annotations": {
+    "list": []
+  },
+  "description": "New API LLM gateway performance: TTFT, TPOT, TPS, latency, tokens and errors.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Request rate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, group, stream) (rate(newapi_llm_requests_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m]))",
+          "legendFormat": "{{model}} / {{group}} / stream={{stream}}",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Success rate",
+      "type": "stat",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 95
+              },
+              {
+                "color": "green",
+                "value": 99
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "100 * sum(rate(newapi_llm_requests_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\",outcome=\"success\"}[5m])) / clamp_min(sum(rate(newapi_llm_requests_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])), 0.000001)",
+          "legendFormat": "Success rate",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Error rate",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 0,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, group, stream) (rate(newapi_llm_requests_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\",outcome!=\"success\"}[5m]))",
+          "legendFormat": "{{model}} / {{group}} / stream={{stream}}",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Output tokens / second",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 8,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, group, stream) (rate(newapi_llm_output_tokens_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m]))",
+          "legendFormat": "{{model}} / {{group}} / stream={{stream}}",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Output TPS (token-weighted)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 8,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, group, stream) (rate(newapi_llm_output_tokens_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])) / clamp_min(sum by (model, group, stream) (rate(newapi_llm_generation_seconds_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])), 0.000001)",
+          "legendFormat": "{{model}} / {{group}} / stream={{stream}}",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "TPOT (token-weighted, ms/token)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 16,
+        "y": 8,
+        "w": 8,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "1000 * sum by (model, group, stream) (rate(newapi_llm_generation_seconds_total{stream=\"true\",model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])) / clamp_min(sum by (model, group, stream) (rate(newapi_llm_output_tokens_total{stream=\"true\",model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])), 0.000001)",
+          "legendFormat": "{{model}} / {{group}} / stream={{stream}}",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "TTFT quantiles",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 16,
+        "w": 12,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "1000 * histogram_quantile(0.50, sum by (le, model, group, stream) (rate(newapi_llm_ttft_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p50",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "1000 * histogram_quantile(0.95, sum by (le, model, group, stream) (rate(newapi_llm_ttft_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p95",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "1000 * histogram_quantile(0.99, sum by (le, model, group, stream) (rate(newapi_llm_ttft_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p99",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Total duration quantiles",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 16,
+        "w": 12,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "1000 * histogram_quantile(0.50, sum by (le, model, group, stream) (rate(newapi_llm_total_duration_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p50",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "1000 * histogram_quantile(0.95, sum by (le, model, group, stream) (rate(newapi_llm_total_duration_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p95",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "1000 * histogram_quantile(0.99, sum by (le, model, group, stream) (rate(newapi_llm_total_duration_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p99",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "TPOT quantiles",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 25,
+        "w": 12,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "1000 * histogram_quantile(0.50, sum by (le, model, group, stream) (rate(newapi_llm_tpot_seconds_bucket{stream=\"true\",model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p50",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "1000 * histogram_quantile(0.95, sum by (le, model, group, stream) (rate(newapi_llm_tpot_seconds_bucket{stream=\"true\",model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p95",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "1000 * histogram_quantile(0.99, sum by (le, model, group, stream) (rate(newapi_llm_tpot_seconds_bucket{stream=\"true\",model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p99",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Output TPS quantiles",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 25,
+        "w": 12,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le, model, group, stream) (rate(newapi_llm_output_tps_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p50",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le, model, group, stream) (rate(newapi_llm_output_tps_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p95",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le, model, group, stream) (rate(newapi_llm_output_tps_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p99",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "End-to-end TPS quantiles",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 34,
+        "w": 12,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.50, sum by (le, model, group, stream) (rate(newapi_llm_e2e_tps_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p50",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le, model, group, stream) (rate(newapi_llm_e2e_tps_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p95",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le, model, group, stream) (rate(newapi_llm_e2e_tps_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p99",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Generation duration quantiles",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 34,
+        "w": 12,
+        "h": 9
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ms",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "1000 * histogram_quantile(0.50, sum by (le, model, group, stream) (rate(newapi_llm_generation_duration_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p50",
+          "range": true
+        },
+        {
+          "refId": "B",
+          "expr": "1000 * histogram_quantile(0.95, sum by (le, model, group, stream) (rate(newapi_llm_generation_duration_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p95",
+          "range": true
+        },
+        {
+          "refId": "C",
+          "expr": "1000 * histogram_quantile(0.99, sum by (le, model, group, stream) (rate(newapi_llm_generation_duration_seconds_bucket{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m])))",
+          "legendFormat": "p99",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Errors by type",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 43,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (model, error_type) (rate(newapi_llm_errors_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m]))",
+          "legendFormat": "{{model}} / {{error_type}}",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Requests by channel",
+      "type": "timeseries",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 43,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (channel_id, model, outcome) (rate(newapi_llm_requests_total{model=~\"$model\",group=~\"$group\",stream=~\"$stream\",channel_id=~\"$channel_id\"}[5m]))",
+          "legendFormat": "channel={{channel_id}} / {{model}} / {{outcome}}",
+          "range": true
+        }
+      ]
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "tags": [
+    "new-api",
+    "llm",
+    "performance"
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "model",
+        "label": "Model",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(newapi_llm_requests_total, model)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "group",
+        "label": "Group",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(newapi_llm_requests_total, group)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "stream",
+        "label": "Stream",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(newapi_llm_requests_total, stream)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      },
+      {
+        "name": "channel_id",
+        "label": "Channel",
+        "type": "query",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "query": "label_values(newapi_llm_requests_total, channel_id)",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "New API LLM Performance",
+  "uid": "new-api-llm-performance",
+  "version": 1
+}
